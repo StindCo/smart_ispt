@@ -1,4 +1,4 @@
-module smart_ispt
+module github.com/StindCo/smart_ispt
 
 go 1.16
 
