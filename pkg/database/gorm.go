@@ -7,10 +7,12 @@ import (
 
 func ConnectGORMDB(dialector gorm.Dialector) (*gorm.DB, error) {
 	var gormDB *gorm.DB
-	gormDB, err := gorm.Open(dialector)
+	gormDB, err := gorm.Open(dialector, &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		return nil, err
 	}
-	gormDB.AutoMigrate(&repository.UserGORM{})
+	gormDB.AutoMigrate(&repository.UserGORM{}, &repository.RoleGORM{})
 	return gormDB, nil
 }

@@ -15,6 +15,7 @@ type UserGORM struct {
 	Username  string
 	Password  string
 	CreatedAt time.Time
+	RoleID    string `gorm:"size:60"`
 }
 
 // Set tablename (GORM)
@@ -28,6 +29,7 @@ func (u UserGORM) toEntitiesUser() *entities.User {
 		Username:  u.Username,
 		Password:  u.Password,
 		CreatedAt: u.CreatedAt,
+		RoleID:    u.RoleID,
 	}
 }
 
@@ -37,6 +39,7 @@ func NewUserGORM(entityUser *entities.User) *UserGORM {
 	u.Username = entityUser.Username
 	u.Password = entityUser.Password
 	u.CreatedAt = entityUser.CreatedAt
+	u.RoleID = entityUser.RoleID
 	return &u
 }
 
@@ -79,6 +82,23 @@ func (r *UserRepository) List() ([]*entities.User, error) {
 	return result, nil
 }
 
+func (r *UserRepository) GetUsersByRoleID(roleId string) ([]*entities.User, error) {
+	var users []UserGORM
+
+	err := r.DB.Find(&users, "role_id = ?", roleId).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Refactor. maybe inefficient.
+	result := make([]*entities.User, 0, len(users))
+	for _, user := range users {
+		result = append(result, user.toEntitiesUser())
+	}
+
+	return result, nil
+}
+
 func (r *UserRepository) GetByUsername(username string) (*entities.User, error) {
 	var user UserGORM
 
@@ -98,8 +118,36 @@ func (r *UserRepository) Get(userID string) (*entities.User, error) {
 
 	// If no such user present return an error
 	if id.UUIDIsNil(user.ID) {
-		return nil, errors.New("User does not exists.")
+		return nil, errors.New("user does not exists")
 	}
 
 	return user.toEntitiesUser(), nil
+}
+
+func (r *UserRepository) Update(userID string, entityUser *entities.User) (*entities.User, error) {
+	var user UserGORM
+
+	r.DB.Find(&user, "id = ?", userID)
+	user.Password = entityUser.Password
+	r.DB.Save(&user)
+	if id.UUIDIsNil(user.ID) {
+		return nil, errors.New("error à la modification")
+	}
+	return user.toEntitiesUser(), nil
+}
+
+func (r *UserRepository) UpdateRole(userID, roleId string) (*entities.User, error) {
+	var user UserGORM
+	r.DB.Find(&user, "id = ?", userID)
+	user.RoleID = roleId
+	r.DB.Save(&user)
+	if id.UUIDIsNil(user.ID) {
+		return nil, errors.New("error à la modification")
+	}
+	return user.toEntitiesUser(), nil
+}
+
+// TODO: Une fonction à créer
+func (r *UserRepository) Delete(userId string) error {
+	return r.DB.Where("id = ?", userId).Delete(&UserGORM{}).Error
 }

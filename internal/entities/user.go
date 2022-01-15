@@ -13,11 +13,12 @@ type User struct {
 	Username  string    `json="username"`
 	Password  string    `json="password"`
 	CreatedAt time.Time `json="createdAt"`
-	Role      Role
+	Role      *Role
+	RoleID    string
 }
 
 func (u User) IsValid() (*User, error) {
-	if u.Username != "" && u.Password != "" {
+	if u.Username == "" || u.Password == "" {
 		return nil, errors.New("username or password is invalid")
 	}
 	return &u, nil
@@ -37,6 +38,12 @@ func newPasswordHash(password string) (string, error) {
 		return "", err
 	}
 	return string(hash), nil
+}
+
+func (u *User) NewPassword(password string) error {
+	pwd, err := newPasswordHash(password)
+	u.Password = pwd
+	return err
 }
 
 func NewUser(username string, password string) (*User, error) {
@@ -59,6 +66,6 @@ func NewUser(username string, password string) (*User, error) {
 	return user, nil
 }
 
-func (u User) SetRole(role Role) {
+func (u User) SetRole(role *Role) {
 	u.Role = role
 }

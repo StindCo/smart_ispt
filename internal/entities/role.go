@@ -1,32 +1,28 @@
 package entities
 
 import (
-	"errors"
+	"time"
 
 	"github.com/StindCo/smart_ispt/pkg/id"
 )
 
 type Role struct {
-	ID   id.ID  `json="id"`
-	Name string `json="name"`
+	ID          id.ID  `json="id"`
+	Name        string `json="name"`
+	Description string `json="description"`
+	Tag         string `json="tag"`
+	CreatedAt   time.Time
+	Users       []*User
 }
 
-func (r Role) IsValid() (*Role, error) {
-	if r.Name != "" {
-		return nil, errors.New("username or password is invalid")
-	}
-	return &r, nil
-}
-
-func NewRole(name string) (*Role, error) {
+func NewRole(name string, tag string, description string) (*Role, error) {
 
 	role := &Role{
-		ID:   id.NewID(),
-		Name: name,
-	}
-	_, err := role.IsValid()
-	if err != nil {
-		return nil, err
+		ID:          id.NewID(),
+		Name:        name,
+		Description: description,
+		Tag:         tag,
+		CreatedAt:   time.Now(),
 	}
 
 	return role, nil
