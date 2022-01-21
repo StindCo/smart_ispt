@@ -3,11 +3,13 @@ module github.com/StindCo/smart_ispt
 go 1.16
 
 require (
+	github.com/appleboy/gin-jwt/v2 v2.8.0 // indirect
 	github.com/gin-contrib/authz v0.0.0-20220101113842-de6c16bdd099 // indirect
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/sessions v0.0.4 // indirect
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
+	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/uuid v1.3.0

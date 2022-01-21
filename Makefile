@@ -1,2 +1,2 @@
-launch_identiy:
-	go run ./cmd/identity/main.go	
+run_application:
+	go run ./cmd/

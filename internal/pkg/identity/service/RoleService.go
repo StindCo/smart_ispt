@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/StindCo/smart_ispt/internal/entities"
-	repository "github.com/StindCo/smart_ispt/internal/pkg/identity/Repository"
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/interfaces"
+	"github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 )
 
 type RoleServiceImpl struct {
@@ -57,11 +57,29 @@ func (r RoleServiceImpl) List() ([]*entities.Role, error) {
 }
 
 func (r RoleServiceImpl) UpdateRole(id string, entityRole *entities.Role) (*entities.Role, error) {
-	return nil, nil
+	role, err := r.RoleRepository.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	if entityRole.Name != "" {
+		role.Name = entityRole.Name
+	}
+	if entityRole.Name != "" {
+		role.Description = entityRole.Description
+	}
+
+	err = r.RoleRepository.DB.Save(role).Error
+	return role, err
 }
 
 func (r RoleServiceImpl) Delete(id string) error {
-
+	_, err := r.RoleRepository.Get(id)
+	if err != nil {
+		return err
+	}
+	if (r.RoleRepository.Delete(id)) != nil {
+		return errors.New("erreur lors de la suppression de ce role, peut-être qu'il n'existe pas")
+	}
 	return nil
 }
 

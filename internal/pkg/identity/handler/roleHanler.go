@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/interfaces"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,15 +12,20 @@ type RoleHandler struct {
 	Service interfaces.RoleService
 }
 
-func NewRoleHandler(app *gin.RouterGroup, service interfaces.RoleService) {
+func NewRoleHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service interfaces.RoleService) {
 	roleHandler := RoleHandler{
 		Service: service,
 	}
-	app.POST("", roleHandler.CreateRole)
 	app.GET("", roleHandler.List)
 	app.GET("/:roleId", roleHandler.GetRole)
 	app.GET("/:roleId/users", roleHandler.GetUsersForRole)
-	app.PUT("/:roleId", roleHandler.DeleteRole)
+	// require a admin authorization
+	app.Use(auth.MiddlewareFunc())
+	{
+		app.POST("", roleHandler.CreateRole)
+		app.PUT("/:roleId", roleHandler.DeleteRole)
+		app.DELETE("/:roleId", roleHandler.DeleteRole)
+	}
 }
 
 func (h RoleHandler) CreateRole(c *gin.Context) {

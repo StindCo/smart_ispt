@@ -9,12 +9,15 @@ import (
 )
 
 type User struct {
-	ID        id.ID     `json="id"`
-	Username  string    `json="username"`
-	Password  string    `json="password"`
-	CreatedAt time.Time `json="createdAt"`
-	Role      *Role
-	RoleID    string
+	ID           string    `json="id"`
+	Fullname     string    `json="fullname"`
+	Username     string    `json="username"`
+	Password     string    `json="password"`
+	CreatedAt    time.Time `json="createdAt"`
+	IsAdmin      int       `json="isAdmin"`
+	IsDevelopper int       `json="isDevelopper"`
+	Role         *Role
+	RoleID       string
 }
 
 func (u User) IsValid() (*User, error) {
@@ -53,7 +56,7 @@ func NewUser(username string, password string) (*User, error) {
 	}
 
 	user := &User{
-		ID:        id.NewID(),
+		ID:        id.NewID().String(),
 		Username:  username,
 		Password:  pwd,
 		CreatedAt: time.Now(),

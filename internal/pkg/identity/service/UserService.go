@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/StindCo/smart_ispt/internal/entities"
-	repository "github.com/StindCo/smart_ispt/internal/pkg/identity/Repository"
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/interfaces"
+	repository "github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 )
 
 type UserServiceImpl struct {
@@ -21,7 +21,7 @@ func NewUserService(r repository.UserRepository, rr repository.RoleRepository) i
 	}
 }
 
-func (u UserServiceImpl) CreateUser(username string, password string) (*entities.User, error) {
+func (u UserServiceImpl) CreateUser(username string, password string, fullname string) (*entities.User, error) {
 	_, err := u.UserRepository.GetByUsername(username)
 	if err == nil {
 		return nil, errors.New("votre username exist déjà")
@@ -30,6 +30,7 @@ func (u UserServiceImpl) CreateUser(username string, password string) (*entities
 	if err != nil {
 		return nil, err
 	}
+	user.Fullname = fullname
 	user.Role, _ = u.RoleRepository.Get(user.RoleID)
 	return user, u.UserRepository.Create(user)
 }
@@ -41,6 +42,14 @@ func (u UserServiceImpl) GetUser(id string) (*entities.User, error) {
 	}
 	user.Role, _ = u.RoleRepository.Get(user.RoleID)
 	return user, nil
+}
+
+func (u UserServiceImpl) GetUsersWhoAreAdmin() ([]*entities.User, error) {
+	return u.UserRepository.GetAdminsUsers()
+}
+
+func (u UserServiceImpl) GetUsersWhoAreDevelopper() ([]*entities.User, error) {
+	return u.UserRepository.GetDeveloppersUsers()
 }
 
 func (u UserServiceImpl) List() ([]*entities.User, error) {
@@ -72,6 +81,38 @@ func (u UserServiceImpl) UpdatePassword(id string, oldPassword string, newPasswo
 	return u.UserRepository.Update(id, user)
 }
 
+func (u UserServiceImpl) SetAdminPermission(id string) (*entities.User, error) {
+	_, err := u.UserRepository.Get(id)
+	if err != nil {
+		return nil, errors.New("cet utilisateur n'existe pas")
+	}
+	return u.UserRepository.UpdateAdmin(id, 1)
+}
+
+func (u UserServiceImpl) SetDevelopperPermission(id string) (*entities.User, error) {
+	_, err := u.UserRepository.Get(id)
+	if err != nil {
+		return nil, errors.New("cet utilisateur n'existe pas")
+	}
+	return u.UserRepository.UpdateDevelopper(id, 1)
+}
+
+func (u UserServiceImpl) RemoveAdminPermission(id string) (*entities.User, error) {
+	_, err := u.UserRepository.Get(id)
+	if err != nil {
+		return nil, errors.New("cet utilisateur n'existe pas")
+	}
+	return u.UserRepository.UpdateAdmin(id, 0)
+}
+
+func (u UserServiceImpl) RemoveDevelopperPermission(id string) (*entities.User, error) {
+	_, err := u.UserRepository.Get(id)
+	if err != nil {
+		return nil, errors.New("cet utilisateur n'existe pas")
+	}
+	return u.UserRepository.UpdateDevelopper(id, 0)
+}
+
 func (u UserServiceImpl) SetRole(userID, roleId string) (*entities.User, error) {
 	_, err := u.UserRepository.Get(userID)
 	if err != nil {
@@ -90,7 +131,7 @@ func (u UserServiceImpl) SetRole(userID, roleId string) (*entities.User, error) 
 func (u UserServiceImpl) Delete(id string) error {
 	_, err := u.UserRepository.Get(id)
 	if err != nil {
-		return err	
+		return err
 	}
 	if (u.UserRepository.Delete(id)) != nil {
 		return errors.New("erreur lors de la suppression de cet utilisateur, peut-être qu'il n'existe pas")
