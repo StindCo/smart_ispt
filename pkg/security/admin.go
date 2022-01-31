@@ -53,9 +53,6 @@ func InitAdminSecurityMiddleware(repository repository.UserRepository) (*jwt.Gin
 			if err != nil {
 				return nil, jwt.ErrFailedAuthentication
 			}
-			if user.IsAdmin == 0 {
-				return nil, jwt.ErrFailedAuthentication
-			}
 
 			if (user.ValidatePassword(password)) != nil {
 				return nil, jwt.ErrFailedAuthentication
@@ -66,8 +63,10 @@ func InitAdminSecurityMiddleware(repository repository.UserRepository) (*jwt.Gin
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			user1, _ := data.(*entities.User)
 
-			_, err := repository.Get(user1.ID)
-
+			user, err := repository.Get(user1.ID)
+			if user.IsAdmin == 0 {
+				return false
+			}
 			return err == nil
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {

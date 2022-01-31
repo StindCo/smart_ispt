@@ -4,12 +4,17 @@ import (
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/handler"
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/service"
+	"github.com/StindCo/smart_ispt/pkg/applogger"
 	"github.com/StindCo/smart_ispt/pkg/security"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func LaunchIdentity(app *gin.RouterGroup, db *gorm.DB) {
+// Cette fonction permet de dispatcher les endPoints de la sous-application 'Identity'
+// elle prend en paramètre une instance de GIN et une instance de GORM
+func DispatchIdentityRouter(app *gin.RouterGroup, db *gorm.DB) {
+
+	appLogger := applogger.NewLogger("Identity")
 	// Init repositories
 	userRepository := repository.NewUserGORMRepository(db)
 	roleRepository := repository.NewRoleGORMRepository(db)
@@ -19,17 +24,13 @@ func LaunchIdentity(app *gin.RouterGroup, db *gorm.DB) {
 	roleService := service.NewRoleService(*roleRepository, *userRepository)
 
 	// Init All securities applications
-	authMiddleware, err := security.InitAdminSecurityMiddleware(*userRepository)
+	authAdminMiddleware, err := security.InitAdminSecurityMiddleware(*userRepository)
 	if err != nil {
 		panic("Erreur lors de l'initialisation de la sécurité pour les utilisateurs")
 	}
 
-	app.GET("/test/*action", func(c *gin.Context) {
-		c.String(200, c.Param("action"))
-	})
+	app.POST("/login", authAdminMiddleware.LoginHandler)
 
-	app.POST("/login", authMiddleware.LoginHandler)
-
-	handler.NewUserHandler(app.Group("v1/users"), authMiddleware, userService)
-	handler.NewRoleHandler(app.Group("v1/roles"), authMiddleware, roleService)
+	handler.NewUserHandler(app.Group("users"), authAdminMiddleware, userService, appLogger)
+	handler.NewRoleHandler(app.Group("roles"), authAdminMiddleware, roleService, appLogger)
 }

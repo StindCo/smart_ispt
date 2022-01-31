@@ -4,18 +4,29 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/StindCo/smart_ispt/internal/entities"
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/interfaces"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/go-hclog"
 )
 
 type UserHandler struct {
 	Service interfaces.UserService
+	Logger  hclog.Logger
 }
 
-func NewUserHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service interfaces.UserService) {
+func getUserActor(c *gin.Context, userService interfaces.UserService) (*entities.User, error) {
+	claims := jwt.ExtractClaims(c)
+	userId := claims["id"].(string)
+	user, err := userService.GetUser(userId)
+	return user, err
+}
+
+func NewUserHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service interfaces.UserService, logger hclog.Logger) {
 	userHandler := UserHandler{
 		Service: service,
+		Logger:  logger,
 	}
 	app.GET("", userHandler.List)
 	app.GET("/:userId", userHandler.GetUser)
@@ -28,6 +39,7 @@ func NewUserHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service in
 		app.GET("/developpers", userHandler.GetDeveloppersUsers)
 
 		app.POST("", userHandler.CreateUser)
+
 		app.PUT("/:userId/role/:roleId", userHandler.SetRole)
 
 		app.PUT("/:userId/admins", userHandler.SetAdminPermission)
@@ -42,6 +54,9 @@ func NewUserHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service in
 }
 
 func (h UserHandler) CreateUser(c *gin.Context) {
+
+	userActor, _ := getUserActor(c, h.Service)
+
 	type UserDTO struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -60,6 +75,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		})
 		return
 	}
+	h.Logger.Info(fmt.Sprintf("Admin '%v' create a user with username = %v and id = %v", userActor.Username, user.Username, user.ID))
 	c.JSON(201, gin.H{
 		"status":    "success",
 		"data":      user,
@@ -120,7 +136,7 @@ func (h UserHandler) GetDeveloppersUsers(c *gin.Context) {
 
 func (h UserHandler) GetUser(c *gin.Context) {
 	userId := c.Param("userId")
-	users, err := h.Service.GetUser(userId)
+	user, err := h.Service.GetUser(userId)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status":  "error",
@@ -130,7 +146,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"status": "success",
-		"data":   users,
+		"data":   user,
 	})
 }
 

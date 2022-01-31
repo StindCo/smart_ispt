@@ -6,15 +6,18 @@ import (
 	"github.com/StindCo/smart_ispt/internal/pkg/identity/interfaces"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/go-hclog"
 )
 
 type RoleHandler struct {
 	Service interfaces.RoleService
+	Logger  hclog.Logger
 }
 
-func NewRoleHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service interfaces.RoleService) {
+func NewRoleHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service interfaces.RoleService, logger hclog.Logger) {
 	roleHandler := RoleHandler{
 		Service: service,
+		Logger:  logger,
 	}
 	app.GET("", roleHandler.List)
 	app.GET("/:roleId", roleHandler.GetRole)

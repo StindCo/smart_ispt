@@ -6,11 +6,13 @@ import (
 )
 
 func main() {
+
 	db := database.RunConnectionToGorm()
 
 	ginRouter := router.InitGinRouter()
 
-	LaunchIdentity(ginRouter.Group("/identity"), db)
+	DispatchIdentityRouter(ginRouter.Group("/identity/v1"), db)
+	DispatcheDiscoveryRouter(ginRouter.Group("/discovery"), db)
 
 	router.Run(ginRouter)
 }
