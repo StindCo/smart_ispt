@@ -7,10 +7,10 @@ import (
 )
 
 type Role struct {
-	ID          id.ID  `json="id"`
-	Name        string `json="name"`
-	Description string `json="description"`
-	Tag         string `json="tag"`
+	ID          id.ID  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Tag         string `json:"tag"`
 	CreatedAt   time.Time
 	Users       []*User
 }

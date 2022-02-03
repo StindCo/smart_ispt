@@ -10,14 +10,15 @@ import (
 
 type UserGORM struct {
 	gorm.Model
-	ID           string `gorm:"primarykey"`
-	Username     string
-	Fullname     string
-	Password     string
-	CreatedAt    time.Time
-	RoleID       string `gorm:"size:60"`
-	IsAdmin      int
-	IsDevelopper int
+	ID            string `gorm:"primarykey"`
+	Username      string
+	ApplicationID string
+	Fullname      string
+	Password      string
+	CreatedAt     time.Time
+	RoleID        string `gorm:"size:60"`
+	IsAdmin       int
+	IsDevelopper  int
 }
 
 // Set tablename (GORM)
@@ -25,7 +26,7 @@ func (UserGORM) TableName() string {
 	return "users"
 }
 
-func (u UserGORM) toEntitiesUser() *entities.User {
+func (u UserGORM) ToEntitiesUser() *entities.User {
 	return &entities.User{
 		ID:           u.ID,
 		Fullname:     u.Fullname,
@@ -84,7 +85,7 @@ func (r *UserRepository) List() ([]*entities.User, error) {
 	// TODO: Refactor. maybe inefficient.
 	result := make([]*entities.User, 0, len(users))
 	for _, user := range users {
-		result = append(result, user.toEntitiesUser())
+		result = append(result, user.ToEntitiesUser())
 	}
 
 	return result, nil
@@ -101,7 +102,7 @@ func (r *UserRepository) GetUsersByRoleID(roleId string) ([]*entities.User, erro
 	// TODO: Refactor. maybe inefficient.
 	result := make([]*entities.User, 0, len(users))
 	for _, user := range users {
-		result = append(result, user.toEntitiesUser())
+		result = append(result, user.ToEntitiesUser())
 	}
 
 	return result, nil
@@ -118,7 +119,7 @@ func (r *UserRepository) GetAdminsUsers() ([]*entities.User, error) {
 	// TODO: Refactor. maybe inefficient.
 	result := make([]*entities.User, 0, len(users))
 	for _, user := range users {
-		result = append(result, user.toEntitiesUser())
+		result = append(result, user.ToEntitiesUser())
 	}
 
 	return result, nil
@@ -135,7 +136,7 @@ func (r *UserRepository) GetDeveloppersUsers() ([]*entities.User, error) {
 	// TODO: Refactor. maybe inefficient.
 	result := make([]*entities.User, 0, len(users))
 	for _, user := range users {
-		result = append(result, user.toEntitiesUser())
+		result = append(result, user.ToEntitiesUser())
 	}
 
 	return result, nil
@@ -150,7 +151,7 @@ func (r *UserRepository) GetByUsername(username string) (*entities.User, error) 
 		return nil, errors.New("user does not exists")
 	}
 
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) GetByUsernameAndPassword(username string, password string) (*entities.User, error) {
@@ -162,7 +163,7 @@ func (r *UserRepository) GetByUsernameAndPassword(username string, password stri
 		return nil, errors.New("user does not exists")
 	}
 
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) Get(userID string) (*entities.User, error) {
@@ -175,7 +176,7 @@ func (r *UserRepository) Get(userID string) (*entities.User, error) {
 		return nil, errors.New("user does not exists")
 	}
 
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) Update(userID string, entityUser *entities.User) (*entities.User, error) {
@@ -187,7 +188,7 @@ func (r *UserRepository) Update(userID string, entityUser *entities.User) (*enti
 	if user.ID == "" {
 		return nil, errors.New("error à la modification")
 	}
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) UpdateRole(userID, roleId string) (*entities.User, error) {
@@ -198,7 +199,7 @@ func (r *UserRepository) UpdateRole(userID, roleId string) (*entities.User, erro
 	if user.ID == "" {
 		return nil, errors.New("error à la modification")
 	}
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) UpdateAdmin(userID string, value int) (*entities.User, error) {
@@ -209,7 +210,7 @@ func (r *UserRepository) UpdateAdmin(userID string, value int) (*entities.User, 
 	if user.ID == "" {
 		return nil, errors.New("error à la modification")
 	}
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 func (r *UserRepository) UpdateDevelopper(userID string, value int) (*entities.User, error) {
@@ -220,7 +221,7 @@ func (r *UserRepository) UpdateDevelopper(userID string, value int) (*entities.U
 	if user.ID == "" {
 		return nil, errors.New("error à la modification")
 	}
-	return user.toEntitiesUser(), nil
+	return user.ToEntitiesUser(), nil
 }
 
 // TODO: Une fonction à créer

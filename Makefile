@@ -1,2 +1,2 @@
 run_application:
-	go run ./cmd/
+	gow -v run ./cmd/

@@ -1,23 +1,25 @@
 package database
 
 import (
+	discoveryRepo "github.com/StindCo/smart_ispt/internal/pkg/discovery/repository"
 	repository "github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 	"github.com/StindCo/smart_ispt/pkg/applogger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func ConnectGORMDB(dialector gorm.Dialector) (*gorm.DB, error) {
 	var gormDB *gorm.DB
 	gormDB, err := gorm.Open(dialector, &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   logger.Default.LogMode(logger.Silent),
+		// Logger:                                   logger.Default.LogMode(logger.Silent),
+		// DryRun: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	gormDB.AutoMigrate(&repository.UserGORM{}, &repository.RoleGORM{})
+
+	gormDB.AutoMigrate(&repository.UserGORM{}, &repository.RoleGORM{}, &discoveryRepo.Application{})
 	return gormDB, nil
 }
 

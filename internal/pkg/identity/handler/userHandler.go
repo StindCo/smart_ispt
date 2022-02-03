@@ -35,10 +35,10 @@ func NewUserHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service in
 	// Need a Admin authorization
 	app.Use(auth.MiddlewareFunc())
 	{
+		app.POST("", userHandler.CreateUser)
+
 		app.GET("/admins", userHandler.GetAdminsUsers)
 		app.GET("/developpers", userHandler.GetDeveloppersUsers)
-
-		app.POST("", userHandler.CreateUser)
 
 		app.PUT("/:userId/role/:roleId", userHandler.SetRole)
 

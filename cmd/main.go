@@ -12,7 +12,7 @@ func main() {
 	ginRouter := router.InitGinRouter()
 
 	DispatchIdentityRouter(ginRouter.Group("/identity/v1"), db)
-	DispatcheDiscoveryRouter(ginRouter.Group("/discovery"), db)
+	DispatcheDiscoveryRouter(ginRouter.Group("/discovery/v1"), db)
 
 	router.Run(ginRouter)
 }

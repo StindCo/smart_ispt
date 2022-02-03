@@ -11,11 +11,12 @@ import (
 
 type RoleGORM struct {
 	gorm.Model
-	ID          id.ID `gorm:"primarykey"`
-	Name        string
-	Description string
-	Tag         string
-	CreatedAt   time.Time
+	ID            id.ID `gorm:"primarykey"`
+	Name          string
+	ApplicationID string
+	Description   string
+	Tag           string
+	CreatedAt     time.Time
 }
 
 // Set tablename (GORM)
@@ -23,7 +24,7 @@ func (RoleGORM) TableName() string {
 	return "roles"
 }
 
-func (r RoleGORM) toEntitiesRole() *entities.Role {
+func (r RoleGORM) ToEntitiesRole() *entities.Role {
 	return &entities.Role{
 		ID:          r.ID,
 		Name:        r.Name,
@@ -77,7 +78,7 @@ func (r *RoleRepository) List() ([]*entities.Role, error) {
 	// TODO: Refactor. maybe inefficient.
 	result := make([]*entities.Role, 0, len(roles))
 	for _, user := range roles {
-		result = append(result, user.toEntitiesRole())
+		result = append(result, user.ToEntitiesRole())
 	}
 
 	return result, nil
@@ -92,7 +93,7 @@ func (r *RoleRepository) GetByTag(tag string) (*entities.Role, error) {
 		return nil, errors.New("user does not exists")
 	}
 
-	return role.toEntitiesRole(), nil
+	return role.ToEntitiesRole(), nil
 }
 
 func (r *RoleRepository) Get(roleID string) (*entities.Role, error) {
@@ -105,7 +106,7 @@ func (r *RoleRepository) Get(roleID string) (*entities.Role, error) {
 		return nil, errors.New("user does not exists")
 	}
 
-	return role.toEntitiesRole(), nil
+	return role.ToEntitiesRole(), nil
 }
 
 func (r *RoleRepository) Update(roleID string, entityRole *entities.Role) (*entities.Role, error) {

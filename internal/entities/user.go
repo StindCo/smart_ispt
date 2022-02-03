@@ -9,13 +9,13 @@ import (
 )
 
 type User struct {
-	ID           string    `json="id"`
-	Fullname     string    `json="fullname"`
-	Username     string    `json="username"`
-	Password     string    `json="password"`
-	CreatedAt    time.Time `json="createdAt"`
-	IsAdmin      int       `json="isAdmin"`
-	IsDevelopper int       `json="isDevelopper"`
+	ID           string    `json:"id"`
+	Fullname     string    `json:"fullname"`
+	Username     string    `json:"username"`
+	Password     string    `json:"password"`
+	CreatedAt    time.Time `json:"createdAt"`
+	IsAdmin      int       `json:"isAdmin"`
+	IsDevelopper int       `json:"isDevelopper"`
 	Role         *Role
 	RoleID       string
 }
