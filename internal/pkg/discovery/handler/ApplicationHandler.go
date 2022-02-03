@@ -29,15 +29,21 @@ func NewApplicationHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, ser
 		Logger:  logger,
 	}
 
+	// TODO: Il faudrait penser à créer des Querys pour les filtrages
 	app.GET("", ApplicationHandler.List)
+
 	app.GET("/:applicationID", ApplicationHandler.GetOneApplication)
 	app.GET("/:applicationID/developpers", ApplicationHandler.GetApplicationDeveloppers)
 	app.GET("/:applicationID/consumers", ApplicationHandler.GetApplicationConsumers)
+
+	app.GET("/developpers/:developperID/applications", ApplicationHandler.GetApplicationsCreatedByDevelopperID)
+	app.GET("/consumers/:roleID/applications", ApplicationHandler.GetApplicationsCreatedForRoleID)
 
 	// Need a Admin authorization
 	app.Use(auth.MiddlewareFunc())
 	{
 		app.POST("", ApplicationHandler.CreateApplication)
+		app.PUT("/:applicationID/consumers", ApplicationHandler.AddApplicationConsumers)
 	}
 }
 
@@ -154,5 +160,100 @@ func (ah ApplicationHandler) List(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"status": "success",
 		"data":   applications,
+	})
+}
+
+func (ah ApplicationHandler) GetApplicationsCreatedByDevelopperID(c *gin.Context) {
+	developperID := c.Param("developperID")
+
+	applications, err := ah.Service.GetAllApplicationsCreatedByDevelopperID(developperID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status": "success",
+		"data":   applications,
+	})
+}
+
+func (ah ApplicationHandler) GetApplicationsCreatedForRoleID(c *gin.Context) {
+	roleId := c.Param("roleID")
+
+	applications, err := ah.Service.GetAllApplicationsCreatedForRoleID(roleId)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status": "success",
+		"data":   applications,
+	})
+}
+
+func (ah ApplicationHandler) AddApplicationConsumers(c *gin.Context) {
+
+	userDevelopperID := getUserActor(c)
+	var developperExists bool
+	type roleConsumersDTO struct {
+		ConsumersRoleID string `json:"consumer_id"`
+	}
+	var roleConsumerDtO roleConsumersDTO
+	if err := c.ShouldBindJSON(&roleConsumerDtO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	applicationID := c.Param("applicationID")
+
+	developpersForThisApplication, err := ah.Service.GetApplicationDeveloppers(applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": "Erreur de traitement !",
+		})
+		return
+	}
+	developperExists = false
+	for _, developper := range developpersForThisApplication {
+		if developper.ID == userDevelopperID {
+			developperExists = true
+		}
+	}
+
+	if !developperExists {
+		c.JSON(401, gin.H{
+			"status":  "error",
+			"message": "Désole, vous n'êtes pas dévéloppeur de cette application",
+		})
+		return
+	}
+
+	applicationUpdated, err := ah.Service.AddConsumerRole(roleConsumerDtO.ConsumersRoleID, applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+	// h.Logger.Info(fmt.Sprintf("Admin '%v' create a user with username = %v and id = %v", userActor.Username, user.Username, user.ID))
+	//TODO: "à faire"
+	c.JSON(201, gin.H{
+		"status":    "success",
+		"data":      applicationUpdated,
+		"ressource": fmt.Sprintf("/users/%v", applicationUpdated.ID),
 	})
 }
