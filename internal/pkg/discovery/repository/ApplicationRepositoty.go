@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/StindCo/smart_ispt/internal/entities"
-	"github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 	identityRepo "github.com/StindCo/smart_ispt/internal/pkg/identity/repository"
 
 	"gorm.io/gorm"
@@ -15,10 +14,10 @@ type Application struct {
 	ConsumerRoles []*identityRepo.RoleGORM `gorm:"many2many:application_consumers;"`
 	Developpers   []*identityRepo.UserGORM `gorm:"many2many:application_developpers;"`
 	PowerBy       string
-	SmartName     string
-	DomainName    string
+	SmartName     string `gorm:"unique;"`
+	DomainName    string `gorm:"unique;"`
 	TestPath      string
-	UrlPath       string
+	UrlPath       string `gorm:"unique;"`
 	Ip            string
 	Description   string
 }
@@ -66,6 +65,7 @@ func NewApplicationGORM(entityApp *entities.Application) *Application {
 	app.PowerBy = entityApp.PowerBy
 	app.SmartName = entityApp.SmartName
 	app.Name = entityApp.Name
+	app.UrlPath = entityApp.UrlPath
 	app.Developpers = developpers
 	app.ConsumerRoles = roles
 	return &app
@@ -99,7 +99,7 @@ func (a *ApplicationRepository) Get(applicationID string) (*entities.Application
 func (a *ApplicationRepository) GetDeveloppersForApplicationID(applicationID string) ([]*entities.User, error) {
 	var application Application
 	application.ID = applicationID
-	var developpers []*repository.UserGORM
+	var developpers []*identityRepo.UserGORM
 
 	a.DB.Model(&application).Association("Developpers").Find(&developpers)
 
@@ -114,7 +114,7 @@ func (a *ApplicationRepository) GetDeveloppersForApplicationID(applicationID str
 func (a *ApplicationRepository) GetConsumersForApplicationID(applicationID string) ([]*entities.Role, error) {
 	var application Application
 	application.ID = applicationID
-	var consumerRoles []*repository.RoleGORM
+	var consumerRoles []*identityRepo.RoleGORM
 
 	a.DB.Model(&application).Association("ConsumerRoles").Find(&consumerRoles)
 
@@ -137,4 +137,57 @@ func (a *ApplicationRepository) GetAllApplications() ([]*entities.Application, e
 	}
 
 	return applicationEntities, nil
+}
+
+// TODO: Cette fonction a cruellement besoin d'un refactoring
+func (a *ApplicationRepository) GetAllApplicationsByDeveloppers(developperID string) ([]*entities.Application, error) {
+	type result struct {
+		ApplicationID string
+		UserGormID    string
+	}
+
+	developper := identityRepo.UserGORM{
+		ID: developperID,
+	}
+	var results []*result
+
+	a.DB.Model(&developper).Select("application_developpers.application_id, application_developpers.user_gorm_id").Joins("left join application_developpers on application_developpers.user_gorm_id = users.id").Scan(&results)
+	applicationEntities := make([]*entities.Application, 0, len(results))
+
+	for _, result := range results {
+		app, _ := a.Get(result.ApplicationID)
+		applicationEntities = append(applicationEntities, app)
+	}
+	return applicationEntities, nil
+}
+
+// TODO: Cette fonction a cruellement besoin d'un refactoring
+func (a *ApplicationRepository) GetAllApplicationsByConsumers(consumerID string) ([]*entities.Application, error) {
+	type result struct {
+		ApplicationID string
+		RoleGormID    string
+	}
+
+	consumer := identityRepo.RoleGORM{
+		ID: consumerID,
+	}
+	var results []*result
+
+	a.DB.Model(&consumer).Select("application_consumers.application_id, application_consumers.role_gorm_id").Joins("left join application_consumers on application_consumers.role_gorm_id = roles.id").Scan(&results)
+	applicationEntities := make([]*entities.Application, 0, len(results))
+
+	for _, result := range results {
+		app, _ := a.Get(result.ApplicationID)
+		applicationEntities = append(applicationEntities, app)
+	}
+	return applicationEntities, nil
+}
+
+func (a *ApplicationRepository) AddConsumerRole(application *entities.Application, role *entities.Role) (*entities.Application, error) {
+	appGorm := NewApplicationGORM(application)
+	roleGORM := identityRepo.NewRoleGORM(role)
+
+	a.DB.Model(&appGorm).Association("ConsumerRoles").Append(roleGORM)
+
+	return appGorm.toEntitiesApplication(), nil
 }

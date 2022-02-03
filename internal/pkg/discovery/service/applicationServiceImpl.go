@@ -73,3 +73,39 @@ func (as ApplicationServiceImpl) GetAllApplications() ([]*entities.Application, 
 	}
 	return applications, nil
 }
+
+func (as ApplicationServiceImpl) GetAllApplicationsCreatedByDevelopperID(developperID string) ([]*entities.Application, error) {
+	user, err := as.UserRepository.Get(developperID)
+	if err != nil {
+		return nil, errors.New("désolé, cet utlisateur n'existe pas")
+	}
+	if user.IsDevelopper == 0 {
+		return nil, errors.New("cet utilisateur, n'est pas présentement dévéloppeur, donc n'a pas d'application à son actif")
+	}
+	applications, err := as.ApplicationRepository.GetAllApplicationsByDeveloppers(developperID)
+
+	return applications, err
+}
+
+func (as ApplicationServiceImpl) GetAllApplicationsCreatedForRoleID(roleID string) ([]*entities.Application, error) {
+	_, err := as.UserRepository.Get(roleID)
+	if err != nil {
+		return nil, errors.New("désolé, ce role n'existe pas")
+	}
+	applications, err := as.ApplicationRepository.GetAllApplicationsByDeveloppers(roleID)
+
+	return applications, err
+}
+
+func (as ApplicationServiceImpl) AddConsumerRole(roleID string, applicationID string) (*entities.Application, error) {
+	role, err := as.RoleRepository.Get(roleID)
+	if err != nil {
+		return nil, errors.New("ce role n'existe pas")
+	}
+	application, err := as.ApplicationRepository.Get(applicationID)
+	if err != nil {
+		return nil, errors.New("cette application n'existe pas, sorry ")
+	}
+	application, err = as.ApplicationRepository.AddConsumerRole(application, role)
+	return application, err
+}
