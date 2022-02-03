@@ -7,7 +7,7 @@ import (
 )
 
 type Role struct {
-	ID          id.ID  `json:"id"`
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Tag         string `json:"tag"`
@@ -18,7 +18,7 @@ type Role struct {
 func NewRole(name string, tag string, description string) (*Role, error) {
 
 	role := &Role{
-		ID:          id.NewID(),
+		ID:          id.NewID().String(),
 		Name:        name,
 		Description: description,
 		Tag:         tag,

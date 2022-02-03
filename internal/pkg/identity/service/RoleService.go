@@ -29,7 +29,7 @@ func (r RoleServiceImpl) CreateRole(name string, tag string, description string)
 	if err != nil {
 		return nil, err
 	}
-	role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID.String())
+	role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID)
 	return role, r.RoleRepository.Create(role)
 }
 
@@ -38,7 +38,7 @@ func (r RoleServiceImpl) GetRole(id string) (*entities.Role, error) {
 	if err != nil {
 		return nil, errors.New("ce role n'existe pas")
 	}
-	role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID.String())
+	role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID)
 	return role, nil
 }
 
@@ -49,7 +49,7 @@ func (r RoleServiceImpl) List() ([]*entities.Role, error) {
 	}
 	var rolesResult []*entities.Role
 	for _, role := range roles {
-		role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID.String())
+		role.Users, _ = r.UserRepository.GetUsersByRoleID(role.ID)
 		rolesResult = append(rolesResult, role)
 	}
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/StindCo/smart_ispt/internal/entities"
+
 	"gorm.io/gorm"
 )
 
@@ -15,10 +16,11 @@ type UserGORM struct {
 	ApplicationID string
 	Fullname      string
 	Password      string
-	CreatedAt     time.Time
-	RoleID        string `gorm:"size:60"`
-	IsAdmin       int
-	IsDevelopper  int
+	// Applications  []*discoveryRepo.Application `gorm:"many2many:application_developpers;"`
+	CreatedAt    time.Time
+	RoleID       string `gorm:"size:60"`
+	IsAdmin      int
+	IsDevelopper int
 }
 
 // Set tablename (GORM)

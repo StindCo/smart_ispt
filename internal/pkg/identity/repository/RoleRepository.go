@@ -5,13 +5,12 @@ import (
 	"time"
 
 	"github.com/StindCo/smart_ispt/internal/entities"
-	"github.com/StindCo/smart_ispt/pkg/id"
 	"gorm.io/gorm"
 )
 
 type RoleGORM struct {
 	gorm.Model
-	ID            id.ID `gorm:"primarykey"`
+	ID            string `gorm:"primarykey"`
 	Name          string
 	ApplicationID string
 	Description   string
@@ -89,7 +88,7 @@ func (r *RoleRepository) GetByTag(tag string) (*entities.Role, error) {
 
 	r.DB.Find(&role, "tag = ?", tag)
 	// If no such user present return an error
-	if id.UUIDIsNil(role.ID) {
+	if role.ID == "" {
 		return nil, errors.New("user does not exists")
 	}
 
@@ -102,7 +101,7 @@ func (r *RoleRepository) Get(roleID string) (*entities.Role, error) {
 	r.DB.Find(&role, "id = ?", roleID)
 
 	// If no such user present return an error
-	if id.UUIDIsNil(role.ID) {
+	if role.ID == "" {
 		return nil, errors.New("user does not exists")
 	}
 
@@ -115,7 +114,7 @@ func (r *RoleRepository) Update(roleID string, entityRole *entities.Role) (*enti
 		return nil, err
 	}
 
-	if id.UUIDIsNil(role.ID) {
+	if role.ID == "" {
 		return nil, errors.New("error à la modification")
 	}
 	return entityRole, nil
