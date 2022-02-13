@@ -8,5 +8,5 @@ type RoleService interface {
 	List() ([]*entities.Role, error)
 	UpdateRole(id string, entityRole *entities.Role) (*entities.Role, error)
 	Delete(id string) error
-	GetUsers(roleId string) ([]*entities.User, error)
+	GetUsers(roleTag string) ([]*entities.User, error)
 }

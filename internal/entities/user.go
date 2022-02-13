@@ -15,7 +15,8 @@ type User struct {
 	Password     string    `json:"password"`
 	CreatedAt    time.Time `json:"createdAt"`
 	IsAdmin      int       `json:"isAdmin"`
-	IsDevelopper int       `json:"isDevelopper"`
+	Status       int
+	IsDevelopper int `json:"isDevelopper"`
 	Role         *Role
 	RoleID       string
 }

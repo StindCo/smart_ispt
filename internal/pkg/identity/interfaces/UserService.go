@@ -1,10 +1,14 @@
 package interfaces
 
-import "github.com/StindCo/smart_ispt/internal/entities"
+import (
+	"github.com/StindCo/smart_ispt/internal/entities"
+	dto "github.com/StindCo/smart_ispt/internal/pkg/identity/Dto"
+)
 
 type UserService interface {
-	CreateUser(username string, password string, fullname string) (*entities.User, error)
+	CreateUser(userDTO dto.UserDTO) (*entities.User, error)
 	GetUser(id string) (*entities.User, error)
+	GetRoleOfUser(id string) (*entities.Role, error)
 	List() ([]*entities.User, error)
 	GetUsersWhoAreAdmin() ([]*entities.User, error)
 	GetUsersWhoAreDevelopper() ([]*entities.User, error)

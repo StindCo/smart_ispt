@@ -14,6 +14,7 @@ type RoleGORM struct {
 	Name          string
 	ApplicationID string
 	Description   string
+	UserID        string
 	Tag           string
 	CreatedAt     time.Time
 }

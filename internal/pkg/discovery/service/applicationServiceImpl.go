@@ -50,6 +50,14 @@ func (as ApplicationServiceImpl) GetOneApplication(applicationID string) (*entit
 	return application, err
 }
 
+func (as ApplicationServiceImpl) GetOneApplicationBySmartName(smartName string) (*entities.Application, error) {
+	application, err := as.ApplicationRepository.GetBySmartName(smartName)
+	if err != nil {
+		return nil, err
+	}
+	return application, err
+}
+
 func (as ApplicationServiceImpl) GetApplicationDeveloppers(applicationID string) ([]*entities.User, error) {
 	developpers, err := as.ApplicationRepository.GetDeveloppersForApplicationID(applicationID)
 	if err != nil {
@@ -108,4 +116,24 @@ func (as ApplicationServiceImpl) AddConsumerRole(roleID string, applicationID st
 	}
 	application, err = as.ApplicationRepository.AddConsumerRole(application, role)
 	return application, err
+}
+
+func (as ApplicationServiceImpl) AddDevelopper(developperID string, applicationID string) (*entities.Application, error) {
+	developper, err := as.UserRepository.Get(developperID)
+	if err != nil {
+		return nil, errors.New("cet utilisateur n'existe pas ")
+	}
+	if developper.IsDevelopper == 0 {
+		return nil, errors.New("cet utilisateur n'est pas dévéloppeur")
+	}
+	application, err := as.ApplicationRepository.Get(applicationID)
+	if err != nil {
+		return nil, errors.New("cette application n'existe pas, sorry ")
+	}
+	application, err = as.ApplicationRepository.AddDevelopper(application, developper)
+	return application, err
+}
+
+func (as ApplicationServiceImpl) DeleteApplication(applicationID string) error {
+	return as.ApplicationRepository.DeleteApplication(applicationID)
 }

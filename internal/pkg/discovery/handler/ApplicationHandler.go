@@ -44,6 +44,8 @@ func NewApplicationHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, ser
 	{
 		app.POST("", ApplicationHandler.CreateApplication)
 		app.PUT("/:applicationID/consumers", ApplicationHandler.AddApplicationConsumers)
+		app.PUT("/:applicationID/developpers", ApplicationHandler.AddApplicationDevelopper)
+		app.DELETE("/:applicationID", ApplicationHandler.DeleteApplication)
 	}
 }
 
@@ -254,6 +256,110 @@ func (ah ApplicationHandler) AddApplicationConsumers(c *gin.Context) {
 	c.JSON(201, gin.H{
 		"status":    "success",
 		"data":      applicationUpdated,
-		"ressource": fmt.Sprintf("/users/%v", applicationUpdated.ID),
+		"ressource": fmt.Sprintf("/applications/%v", applicationUpdated.ID),
+	})
+}
+
+func (ah ApplicationHandler) AddApplicationDevelopper(c *gin.Context) {
+	userDevelopperID := getUserActor(c)
+	var developperExists bool
+	type DevelopperDTO struct {
+		DevelopperID string `json:"developper_id"`
+	}
+	var developperDTO DevelopperDTO
+	if err := c.ShouldBindJSON(&developperDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	applicationID := c.Param("applicationID")
+
+	developpersForThisApplication, err := ah.Service.GetApplicationDeveloppers(applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": "Erreur de traitement !",
+		})
+		return
+	}
+	developperExists = false
+	for _, developper := range developpersForThisApplication {
+		if developper.ID == userDevelopperID {
+			developperExists = true
+		}
+	}
+
+	if !developperExists {
+		c.JSON(401, gin.H{
+			"status":  "error",
+			"message": "Désole, vous n'êtes pas dévéloppeur de cette application",
+		})
+		return
+	}
+
+	applicationUpdated, err := ah.Service.AddDevelopper(developperDTO.DevelopperID, applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+	// h.Logger.Info(fmt.Sprintf("Admin '%v' create a user with username = %v and id = %v", userActor.Username, user.Username, user.ID))
+	//TODO: "à faire"
+	c.JSON(201, gin.H{
+		"status":    "success",
+		"data":      applicationUpdated,
+		"ressource": fmt.Sprintf("/applications/%v", applicationUpdated.ID),
+	})
+}
+
+func (ah ApplicationHandler) DeleteApplication(c *gin.Context) {
+
+	userDevelopperID := getUserActor(c)
+	var developperExists bool
+
+	applicationID := c.Param("applicationID")
+
+	developpersForThisApplication, err := ah.Service.GetApplicationDeveloppers(applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": "Erreur de traitement !",
+		})
+		return
+	}
+	developperExists = false
+	for _, developper := range developpersForThisApplication {
+		if developper.ID == userDevelopperID {
+			developperExists = true
+		}
+	}
+
+	if !developperExists {
+		c.JSON(401, gin.H{
+			"status":  "error",
+			"message": "Désole, vous n'êtes pas dévéloppeur de cette application",
+		})
+		return
+	}
+
+	err = ah.Service.DeleteApplication(applicationID)
+
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "error",
+			"message": "une erreur lors de la suppression de l'application",
+			"details": err.Error(),
+		})
+		return
+	}
+	//TODO: "à faire"
+	c.JSON(201, gin.H{
+		"status":  "success",
+		"message": "Cette application a été supprimé avec succes",
 	})
 }

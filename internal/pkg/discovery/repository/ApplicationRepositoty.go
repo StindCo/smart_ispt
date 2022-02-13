@@ -96,6 +96,15 @@ func (a *ApplicationRepository) Get(applicationID string) (*entities.Application
 	return application.toEntitiesApplication(), err
 }
 
+func (a *ApplicationRepository) GetBySmartName(smartName string) (*entities.Application, error) {
+	var application Application
+	err := a.DB.Where("smart_name = ?", smartName).First(&application).Error
+	if err != nil {
+		return nil, err
+	}
+	return application.toEntitiesApplication(), err
+}
+
 func (a *ApplicationRepository) GetDeveloppersForApplicationID(applicationID string) ([]*entities.User, error) {
 	var application Application
 	application.ID = applicationID
@@ -190,4 +199,17 @@ func (a *ApplicationRepository) AddConsumerRole(application *entities.Applicatio
 	a.DB.Model(&appGorm).Association("ConsumerRoles").Append(roleGORM)
 
 	return appGorm.toEntitiesApplication(), nil
+}
+
+func (a *ApplicationRepository) AddDevelopper(application *entities.Application, developper *entities.User) (*entities.Application, error) {
+	appGorm := NewApplicationGORM(application)
+	developperGORM := identityRepo.NewUserGORM(developper)
+
+	a.DB.Model(&appGorm).Association("Developpers").Append(developperGORM)
+
+	return appGorm.toEntitiesApplication(), nil
+}
+
+func (a *ApplicationRepository) DeleteApplication(applicationID string) error {
+	return a.DB.Where("id = ?", applicationID).Delete(&Application{}).Error
 }

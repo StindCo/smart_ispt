@@ -6,6 +6,7 @@ type ApplicationService interface {
 	CreateApplication(developperID string, entityApp *entities.Application) (*entities.Application, error)
 
 	GetOneApplication(applicationID string) (*entities.Application, error)
+	GetOneApplicationBySmartName(smartName string) (*entities.Application, error)
 	GetApplicationDeveloppers(applicationID string) ([]*entities.User, error)
 	GetApplicationConsumers(applicationID string) ([]*entities.Role, error)
 	GetAllApplications() ([]*entities.Application, error)
@@ -18,7 +19,7 @@ type ApplicationService interface {
 	AddConsumerRole(roleID string, applicationID string) (*entities.Application, error)
 	// RemoveConsumerRole(roleID string, applicationID string) (*entities.Application, error)
 
-	// AddDevelopper(developperID string, applicationID string) (*entities.Application, error)
+	AddDevelopper(developperID string, applicationID string) (*entities.Application, error)
 
-	// DeleteApplication(applicationID string) error
+	DeleteApplication(applicationID string) error
 }

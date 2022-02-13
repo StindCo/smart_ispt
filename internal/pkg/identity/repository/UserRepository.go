@@ -15,10 +15,12 @@ type UserGORM struct {
 	Username      string
 	ApplicationID string
 	Fullname      string
+	Status        int
 	Password      string
 	// Applications  []*discoveryRepo.Application `gorm:"many2many:application_developpers;"`
 	CreatedAt    time.Time
 	RoleID       string `gorm:"size:60"`
+	Role         *RoleGORM
 	IsAdmin      int
 	IsDevelopper int
 }
@@ -35,9 +37,10 @@ func (u UserGORM) ToEntitiesUser() *entities.User {
 		Username:     u.Username,
 		Password:     u.Password,
 		CreatedAt:    u.CreatedAt,
-		RoleID:       u.RoleID,
 		IsAdmin:      u.IsAdmin,
 		IsDevelopper: u.IsDevelopper,
+		RoleID:       u.RoleID,
+		Status:       u.Status,
 	}
 }
 
@@ -48,9 +51,10 @@ func NewUserGORM(entityUser *entities.User) *UserGORM {
 	u.Username = entityUser.Username
 	u.Password = entityUser.Password
 	u.CreatedAt = entityUser.CreatedAt
-	u.RoleID = entityUser.RoleID
 	u.IsAdmin = entityUser.IsAdmin
 	u.IsDevelopper = entityUser.IsDevelopper
+	u.RoleID = entityUser.RoleID
+	u.Status = entityUser.Status
 	return &u
 }
 
@@ -66,9 +70,13 @@ func NewUserGORMRepository(db *gorm.DB) *UserRepository {
 
 func (r *UserRepository) Create(entityUser *entities.User) error {
 	u := NewUserGORM(entityUser)
-
 	err := r.DB.Create(&u).Error
 
+	if entityUser.Role != nil {
+		role := NewRoleGORM(entityUser.Role)
+
+		r.DB.Model(&u).Association("Role").Append(role)
+	}
 	if err != nil {
 		return err
 	}

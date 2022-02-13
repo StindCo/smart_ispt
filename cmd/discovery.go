@@ -27,5 +27,11 @@ func DispatcheDiscoveryRouter(app *gin.RouterGroup, db *gorm.DB) {
 	if err != nil {
 		panic("Erreur lors de l'initialisation de la sécurité pour les utilisateurs")
 	}
-	handler.NewApplicationHandler(app.Group("applications"), authDevelopperMiddleware, applicationService, appLogger)
+	authUserMiddleware, err := security.InitUserSecurityMiddleware(*userRepository)
+
+	if err != nil {
+		panic("Erreur lors de l'initialisation de la sécurité pour les utilisateurs")
+	}
+	handler.NewApplicationHandler(app.Group("registry/applications"), authDevelopperMiddleware, applicationService, appLogger)
+	handler.NewRunnerHandler(app.Group("runner"), authUserMiddleware, applicationService, appLogger)
 }

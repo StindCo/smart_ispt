@@ -21,7 +21,8 @@ func NewRoleHandler(app *gin.RouterGroup, auth *jwt.GinJWTMiddleware, service in
 	}
 	app.GET("", roleHandler.List)
 	app.GET("/:roleId", roleHandler.GetRole)
-	app.GET("/:roleId/users", roleHandler.GetUsersForRole)
+	// TODO: Dans ce cas
+	app.GET("/:roleId/users", roleHandler.GetUsersForRole) // Le roleID respresente plûtot le roleTag
 	// require a admin authorization
 	app.Use(auth.MiddlewareFunc())
 	{
@@ -74,6 +75,7 @@ func (h RoleHandler) List(c *gin.Context) {
 }
 
 func (h RoleHandler) GetRole(c *gin.Context) {
+
 	roleID := c.Param("roleId")
 	role, err := h.Service.GetRole(roleID)
 	if err != nil {
@@ -90,8 +92,8 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 }
 
 func (h RoleHandler) GetUsersForRole(c *gin.Context) {
-	roleID := c.Param("roleId")
-	users, err := h.Service.GetUsers(roleID)
+	roleTag := c.Param("roleId")
+	users, err := h.Service.GetUsers(roleTag)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"status":  "error",
